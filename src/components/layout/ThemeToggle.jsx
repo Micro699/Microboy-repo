@@ -2,20 +2,16 @@ import React, { useEffect, useState } from 'react';
 import { Sun, Moon } from 'lucide-react';
 
 export default function ThemeToggle() {
-  // Helper to detect system dark mode preference
   const getSystemTheme = () => window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-  // Initialize theme state: Prefer localStorage preference, otherwise fall back to system setting
   const [isDark, setIsDark] = useState(() => {
     const savedTheme = localStorage.getItem('theme');
-    if (savedTheme) {
-      return savedTheme === 'dark';
-    }
+    if (savedTheme === 'dark') return true;
+    if (savedTheme === 'light') return false;
     return getSystemTheme();
   });
 
   useEffect(() => {
-    // Apply or remove Tailwind's 'dark' class on <html>
     const root = document.documentElement;
     if (isDark) {
       root.classList.add('dark');
@@ -25,28 +21,22 @@ export default function ThemeToggle() {
   }, [isDark]);
 
   useEffect(() => {
-    // Listen for real-time system theme changes (e.g. system automatic night mode switch)
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-
-    const handleSystemThemeChange = (e) => {
-      // Only auto-update if the user hasn't saved an explicit manual override
+    
+    const handleSystemChange = (e) => {
+      // If user hasn't explicitly locked a theme preference in localStorage, auto-sync
       if (!localStorage.getItem('theme')) {
         setIsDark(e.matches);
       }
     };
 
-    // Attach listener
-    mediaQuery.addEventListener('change', handleSystemThemeChange);
-
-    return () => {
-      mediaQuery.removeEventListener('change', handleSystemThemeChange);
-    };
+    mediaQuery.addEventListener('change', handleSystemChange);
+    return () => mediaQuery.removeEventListener('change', handleSystemChange);
   }, []);
 
   const handleToggle = () => {
     const nextTheme = !isDark;
     setIsDark(nextTheme);
-    // Save manual preference to localStorage
     localStorage.setItem('theme', nextTheme ? 'dark' : 'light');
   };
 
@@ -54,7 +44,8 @@ export default function ThemeToggle() {
     <button
       onClick={handleToggle}
       className="p-2 rounded-lg bg-gray-200 dark:bg-slate-800 text-gray-800 dark:text-yellow-400 hover:opacity-80 transition"
-      aria-label="Toggle Dark/Light Theme"
+      aria-label="Toggle Theme"
+      title="Tap to toggle theme"
     >
       {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
     </button>
