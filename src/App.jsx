@@ -29,6 +29,7 @@ export default function App() {
   // Selected Match for Analytics Modal
   const [selectedMatch, setSelectedMatch] = useState(null);
 
+  // Fetch fixtures on date change
   useEffect(() => {
     let isMounted = true;
     const loadFixtures = async () => {
@@ -45,7 +46,15 @@ export default function App() {
     return () => { isMounted = false; };
   }, [selectedDate]);
 
-  // Tab Filtering Logic
+  // Automated Scroll-To-Top effect whenever page changes or tab changes
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  }, [currentPage, activeTab]);
+
+  // Tab & Search Filtering Logic
   const getFilteredFixtures = () => {
     let list = fixtures.filter((m) => m.status.state !== 'post' && !m.status.completed);
 
@@ -82,6 +91,10 @@ export default function App() {
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
+
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-slate-900">
@@ -153,10 +166,11 @@ export default function App() {
                   />
                 ))}
 
+                {/* Pagination Controls */}
                 <Pagination
                   currentPage={currentPage}
                   totalPages={totalPages}
-                  onPageChange={(page) => setCurrentPage(page)}
+                  onPageChange={handlePageChange}
                 />
               </div>
             )}
